@@ -2,6 +2,7 @@
 """
 Vehicle Shipment Tracker
 Monitors shipment CH01CH7546 and sends email notifications on status changes
+File: tracker.py - FIXED VERSION
 """
 
 import requests
@@ -9,12 +10,37 @@ import json
 import smtplib
 import os
 import logging
+import sys
 from datetime import datetime
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
-from bs4 import BeautifulSoup
+
+# Try different import methods for email
+try:
+    from email.mime.text import MimeText
+    from email.mime.multipart import MimeMultipart
+except ImportError:
+    try:
+        from email.MIMEText import MIMEText as MimeText
+        from email.MIMEMultipart import MIMEMultipart as MimeMultipart
+    except ImportError:
+        print("Email libraries not available. Installing...")
+        os.system("sudo apt install -y python3-email")
+        from email.mime.text import MimeText
+        from email.mime.multipart import MimeMultipart
+
+# Try different import methods for BeautifulSoup
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    print("BeautifulSoup not found. Installing...")
+    os.system("pip3 install beautifulsoup4")
+    from bs4 import BeautifulSoup
 
 # Setup logging
+try:
+    os.makedirs('/home/pi/vehicle-tracker/logs', exist_ok=True)
+except:
+    pass
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
