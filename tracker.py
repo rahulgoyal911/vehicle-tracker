@@ -1,39 +1,19 @@
 #!/usr/bin/env python3
 """
-Vehicle Shipment Tracker
-Monitors shipment CH01CH7546 and sends email notifications on status changes
-File: tracker.py - FIXED VERSION
+Vehicle Shipment Tracker - Python 3.11 Compatible
+File: tracker.py
 """
 
-import requests
 import json
-import smtplib
 import os
 import logging
 import sys
+import smtplib
+import email.utils
 from datetime import datetime
-
-# Try different import methods for email
-try:
-    from email.mime.text import MimeText
-    from email.mime.multipart import MimeMultipart
-except ImportError:
-    try:
-        from email.MIMEText import MIMEText as MimeText
-        from email.MIMEMultipart import MIMEMultipart as MimeMultipart
-    except ImportError:
-        print("Email libraries not available. Installing...")
-        os.system("sudo apt install -y python3-email")
-        from email.mime.text import MimeText
-        from email.mime.multipart import MimeMultipart
-
-# Try different import methods for BeautifulSoup
-try:
-    from bs4 import BeautifulSoup
-except ImportError:
-    print("BeautifulSoup not found. Installing...")
-    os.system("pip3 install beautifulsoup4")
-    from bs4 import BeautifulSoup
+from email.message import EmailMessage
+import requests
+from bs4 import BeautifulSoup
 
 # Setup logging
 try:
@@ -154,21 +134,20 @@ class ShipmentTracker:
             return None
     
     def send_email_notification(self, subject, body):
-        """Send email notification using Gmail SMTP"""
+        """Send email notification using Gmail SMTP - Python 3.11 compatible"""
         try:
-            msg = MimeMultipart()
+            # Create EmailMessage (modern Python 3+ way)
+            msg = EmailMessage()
             msg['From'] = self.config['email']['from_email']
             msg['To'] = self.config['email']['to_email']
             msg['Subject'] = subject
+            msg.set_content(body)
             
-            msg.attach(MimeText(body, 'plain'))
-            
+            # Send email
             server = smtplib.SMTP('smtp.gmail.com', 587)
             server.starttls()
             server.login(self.config['email']['from_email'], self.config['email']['app_password'])
-            
-            text = msg.as_string()
-            server.sendmail(self.config['email']['from_email'], self.config['email']['to_email'], text)
+            server.send_message(msg)
             server.quit()
             
             logging.info(f"Email sent successfully: {subject}")
@@ -178,24 +157,9 @@ class ShipmentTracker:
             logging.error(f"Failed to send email: {e}")
             return False
     
-    def format_notification_message(self, shipment_info, is_update=True, is_reboot=False):
+    def format_notification_message(self, shipment_info, is_update=True):
         """Format notification message"""
-        if is_reboot:
-            subject = f"🔄 Pi Reboot - Shipment Tracker Online"
-            body = f"""Raspberry Pi Shipment Tracker is back online after reboot.
-
-📍 Current Location: {shipment_info['location']}
-📋 Status: {shipment_info['status']}
-📅 Date: {shipment_info['date']}
-🕐 Time: {shipment_info['time']}
-
-System restarted at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-Monitoring will continue every 30 minutes.
-
----
-Automated reboot notification from Raspberry Pi Shipment Tracker
-"""
-        elif is_update:
+        if is_update:
             subject = f"🚚 Shipment Update - {shipment_info['location']}"
             body = f"""Vehicle Shipment Update - CH01CH7546
 
@@ -276,21 +240,6 @@ def main():
         tracker.check_shipment()
     except Exception as e:
         logging.error(f"Script execution failed: {e}")
-        
-        # Try to send error notification
-        try:
-            tracker = ShipmentTracker()
-            subject = "❌ Shipment Tracker Error"
-            body = f"""Shipment tracker encountered an error:
-
-Error: {str(e)}
-Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-Please check the Raspberry Pi logs.
-"""
-            tracker.send_email_notification(subject, body)
-        except:
-            pass
 
 if __name__ == "__main__":
     main()
