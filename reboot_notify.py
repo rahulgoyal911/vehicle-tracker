@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Reboot notification script - sends email when Pi restarts
+Reboot notification script - Python 3.11 compatible
+File: reboot_notify.py
 """
 
 import sys
@@ -129,7 +130,7 @@ This might be the first run after setup
 🔍 MONITORING COMMANDS:
 - Check status: ./check_status.sh
 - View logs: tail -f logs/tracker.log
-- Manual check: python3 tracker.py
+- Manual check: source venv/bin/activate && python tracker.py
 
 ---
 Automated notification from Raspberry Pi Shipment Tracker
