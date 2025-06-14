@@ -1,0 +1,15 @@
+{
+  "email": {
+    "from_email": "your_email@gmail.com",
+    "app_password": "your_16_char_app_password",
+    "to_email": "recipient@gmail.com"
+  },
+  "shipment": {
+    "tracking_number": "CH01CH7546",
+    "check_interval_minutes": 30
+  },
+  "notification": {
+    "send_no_change_daily": false,
+    "daily_summary_hour": 9
+  }
+}
